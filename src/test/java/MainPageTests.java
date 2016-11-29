@@ -13,6 +13,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.List;
 
+import static java.lang.Thread.*;
+
 public class MainPageTests {
     public WebDriver webdriver;
     App app;
@@ -27,7 +29,7 @@ public class MainPageTests {
 
         app = new App(webdriver);
     }
-    
+
     @Test
     public void findFirstTest(){
        WebElement firstBug = app.mainPage().findBugByName("First bug");
@@ -40,10 +42,12 @@ public class MainPageTests {
         app.mainPage().addButton().click();
         app.mainPage().addName("myname");
         app.mainPage().addNote("MyNote");
-        app.mainPage().addPriority("3");
+       // app.mainPage().addPriority("3");
         app.mainPage().apply();
         WebElement newbug = app.mainPage().findBugByName("myname");
         app.mainPage().deleteBug(newbug);
+        Assert.assertTrue(app.mainPage().bugIsDeleted("myname"));
+
     }
 
 
@@ -52,7 +56,9 @@ public class MainPageTests {
         app.mainPage().addDialog().click();
         app.mainPage().fillInDialog("myname1", "note", "3");
         WebElement newbug = app.mainPage().findBugByName("myname1");
-        app.mainPage().deleteBug(newbug);
+      //  app.mainPage().deleteBug(newbug);
+        Assert.assertTrue(app.mainPage().bugIsDeleted("myname1"));
+
     }
 
     @Test
@@ -61,6 +67,12 @@ public class MainPageTests {
         app.mainPage().deleteBug(bug);
 
     }
+
+//    @Test
+//    public void BugTest(){
+//        Assert.assertTrue(app.mainPage().bugIsDeleted("First bummg"));
+//
+//    }
 
     @After
     public void quit(){

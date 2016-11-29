@@ -1,6 +1,7 @@
 package pages;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.security.Credentials;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -20,7 +21,7 @@ public class MainPage {
 
     public MainPage(WebDriver driver){
         webDriver = driver;
-        wait = new WebDriverWait(webDriver, 30);
+        wait = new WebDriverWait(webDriver, 300);
     }
 
     public WebElement findBugByName(String name){
@@ -42,6 +43,25 @@ public class MainPage {
                 throw new RuntimeException("There is no bug with name: " + name);
 
         return bug;
+    }
+
+    public boolean bugIsDeleted(String name){
+        boolean isDeleted = true;
+        WebElement bug = null;
+
+        try {
+            bugs = webDriver.findElement(By.cssSelector("table[class='x-grid-table x-grid-table-resizer']")).findElements(By.tagName("tr"));
+        } catch (Exception ex){
+            throw new RuntimeException("Bug block was not found");
+        }
+
+        for (int i=1; i<bugs.size(); i++) {
+            if (bugs.get(i).findElements(By.tagName("td")).get(2).findElement(By.tagName("div")).getText().equals(name)) {
+            isDeleted = false;
+                throw new RuntimeException("Bug is not deleted");
+            }
+        }
+        return isDeleted;
     }
 
     public String getBugNotes(WebElement bug){
@@ -71,7 +91,7 @@ public class MainPage {
         WebElement name = bugs.get(bugs.size()-1).findElements(By.tagName("td")).get(2).findElement(By.tagName("div"));
         action.doubleClick(name).perform();
         webDriver.findElements(By.cssSelector("div[class='x-editor x-small-editor x-grid-editor x-editor-default x-layer']")).get(0)
-                .findElement(By.tagName("input")).sendKeys(myname, Keys.ENTER);
+                .findElement(By.tagName("input")).sendKeys(myname, Keys.TAB);
     }
 
     public void addNote(String mynote){
@@ -80,18 +100,20 @@ public class MainPage {
         WebElement note = bugs.get(bugs.size()-1).findElements(By.tagName("td")).get(3).findElement(By.tagName("div"));
         action.doubleClick(note).perform();
         wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div[class='x-editor x-small-editor x-grid-editor x-editor-default x-layer']")));
+        wait = new WebDriverWait(webDriver, 30);
         webDriver.findElements(By.cssSelector("div[class='x-editor x-small-editor x-grid-editor x-editor-default x-layer']")).get(1)
-                        .findElement(By.tagName("textarea")).sendKeys(mynote);
+                        .findElement(By.tagName("textarea")).sendKeys(mynote, Keys.TAB);
     }
 
-    public void addPriority(String mypriority){
+    public void addPriority(String  mypriority) {
         action = new Actions(webDriver);
         bugs = webDriver.findElement(By.cssSelector("table[class='x-grid-table x-grid-table-resizer']")).findElements(By.tagName("tr"));
         WebElement priority = bugs.get(bugs.size()-1).findElements(By.tagName("td")).get(4).findElement(By.tagName("div"));
-        action.doubleClick(priority);
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div[class='x-field x-form-item x-field-default x-form-dirty']")));
-        webDriver.findElement(By.cssSelector("div[class='x-field x-form-item x-field-default x-form-dirty']"))
-                .findElement(By.tagName("input")).sendKeys(mypriority, Keys.ENTER);
+        action.doubleClick().perform();
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div[class='x-panel-body   x-grid-body x-panel-body-default x-panel-body-default x-layout-fit']")));
+        webDriver.findElement(By.cssSelector("div[class='x-panel-body   x-grid-body x-panel-body-default x-panel-body-default x-layout-fit']"))
+        .findElements(By.cssSelector("div[class='x-editor x-small-editor x-grid-editor x-editor-default x-layer']")).get(2)
+                .sendKeys(mypriority, Keys.ENTER);
     }
 
     public WebElement apply(){
@@ -104,7 +126,9 @@ public class MainPage {
         bug.click();
         try {
             webDriver.findElements(By.cssSelector("div[class='x-btn x-box-item x-toolbar-item x-btn-default-toolbar-small x-noicon x-btn-noicon x-btn-default-toolbar-small-noicon']"))
-                    .get(3).findElement(By.tagName("span")).click();
+                    .get(3).findElement(By.tagName("button")).click();
+
+
         }
         catch (Exception ex){
             throw new RuntimeException("Button 'Delete' was not found");
@@ -128,6 +152,7 @@ public class MainPage {
         wait.until(ExpectedConditions.presenceOfElementLocated(By.name("notes")));
         webDriver.findElement(By.name("notes")).sendKeys(note);
         wait.until(ExpectedConditions.presenceOfElementLocated(By.name("priority")));
+        webDriver.findElement(By.name("priority")).click();
         webDriver.findElement(By.name("priority")).sendKeys(priority);
         wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("button[data-qtip='OK']")));
         webDriver.findElement(By.cssSelector("button[data-qtip='OK']")).click();
